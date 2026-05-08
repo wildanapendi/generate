@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { getModuleById } from "@/services/modules";
 import { formatDateIndo } from "@/lib/format";
 import type { ModuleContent, ModuleSection } from "@/types/module";
+import { ExportDialog } from "@/components/export/export-dialog";
 
 export const metadata: Metadata = {
   title: "Detail Modul",
@@ -79,9 +80,7 @@ export default async function ModuleDetailPage({ params }: PageProps) {
           )}
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/api/export/pdf?id=${mod.id}`}>Export PDF</Link>
-          </Button>
+          <ExportDialog module={mod} />
           <Button asChild>
             <Link href={`/editor/${mod.id}`}>Edit di Editor</Link>
           </Button>

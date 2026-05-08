@@ -24,7 +24,7 @@ interface EditorStoreState {
 
 const EMPTY_CONTENT: ModuleContent = { sections: [], toc: true, version: 1 };
 
-export const useEditorStore = create<EditorStoreState>((set, get) => ({
+export const useEditorStore = create<EditorStoreState>((set, _get) => ({
   module: null,
   content: EMPTY_CONTENT,
   isDirty: false,
@@ -104,6 +104,3 @@ export const selectIsDirty = (s: EditorStoreState) => s.isDirty;
 
 // Re-export getter so components can call get() from outside React.
 export const getEditorState = useEditorStore.getState;
-
-// Bare bones extra: no-op to avoid unused get warning
-void get;

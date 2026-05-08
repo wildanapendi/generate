@@ -73,16 +73,17 @@ export function SectionManager({
                   : "hover:border-ring/50",
               )}
             >
-              <button
-                type="button"
-                onClick={() => onSelect(s.id)}
-                className="block w-full text-left"
-              >
-                <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => onSelect(s.id)}
+                  className="block flex-1 text-left"
+                >
                   <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     #{i + 1} · {s.type}
                   </span>
-                  <div className="flex gap-1">
+                </button>
+                <div className="flex gap-1">
                     <Button
                       type="button"
                       size="icon-xs"
@@ -124,7 +125,6 @@ export function SectionManager({
                     </Button>
                   </div>
                 </div>
-              </button>
 
               {isActive && (
                 <div className="mt-2 space-y-2">

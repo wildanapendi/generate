@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
       { status: 200 },
     );
   } catch (err) {
+    console.error("GENERATE_API_ERROR", err);
     const message =
       err instanceof Error ? err.message : "GENERATE_FAILED";
 
@@ -102,6 +103,7 @@ export async function POST(req: NextRequest) {
         error: "GENERATE_FAILED",
         message:
           "Gagal membuat modul. Coba lagi atau periksa parameter input.",
+        details: message, // <--- Surfacing the real error message for debugging
       },
       { status: 500 },
     );
