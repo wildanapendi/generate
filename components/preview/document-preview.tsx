@@ -26,10 +26,21 @@ const MM_TO_PX = 96 / 25.4; // 1mm at 96dpi
 
 export function DocumentPreview({
   module,
-  template = DEFAULT_TEMPLATE_CONFIG,
+  template: rawTemplate,
   className,
   scale = 1,
 }: DocumentPreviewProps) {
+  // Deep-merge dengan default config agar setiap sub-object selalu terdefinisi,
+  // mencegah crash saat store belum hydrate atau config dari DB tidak lengkap.
+  const template: TemplateConfig = {
+    cover: { ...DEFAULT_TEMPLATE_CONFIG.cover, ...rawTemplate?.cover },
+    header: { ...DEFAULT_TEMPLATE_CONFIG.header, ...rawTemplate?.header },
+    footer: { ...DEFAULT_TEMPLATE_CONFIG.footer, ...rawTemplate?.footer },
+    watermark: { ...DEFAULT_TEMPLATE_CONFIG.watermark, ...rawTemplate?.watermark },
+    layout: { ...DEFAULT_TEMPLATE_CONFIG.layout, ...rawTemplate?.layout },
+    typography: { ...DEFAULT_TEMPLATE_CONFIG.typography, ...rawTemplate?.typography },
+  };
+
   const content = (module.content as unknown as ModuleContent) ?? {
     sections: [],
   };

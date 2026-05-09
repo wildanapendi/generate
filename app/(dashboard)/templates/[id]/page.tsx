@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getTemplateById } from "@/services/templates";
+import { isCurrentUserAdmin } from "@/services/modules";
 import { TemplateDesigner } from "@/components/template/template-designer";
 import type { Module, ModuleContent } from "@/types/module";
 
@@ -83,6 +84,12 @@ export default async function TemplateDesignerPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  // Hanya admin yang boleh mengakses Template Designer
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) {
+    redirect("/dashboard");
+  }
+
   const { id } = await params;
   const template = await getTemplateById(id);
 

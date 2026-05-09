@@ -19,19 +19,31 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Jika true, item hanya tampil untuk admin */
+  adminOnly?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/modules", label: "Modul", icon: FileText },
-  { href: "/templates", label: "Template", icon: LayoutTemplate },
+  { href: "/templates", label: "Template", icon: LayoutTemplate, adminOnly: true },
   { href: "/generate", label: "Generate Modul", icon: Sparkles },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  /** Apakah user saat ini adalah admin */
+  isAdmin?: boolean;
+}
+
+export function Sidebar({ isAdmin = false }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Filter nav items berdasarkan role — sembunyikan menu admin-only untuk user biasa
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.adminOnly || isAdmin,
+  );
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -52,7 +64,7 @@ export function Sidebar() {
         </div>
       </div>
       <nav className="space-y-1 p-3">
-        {NAV_ITEMS.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           return (
             <Link
@@ -104,7 +116,7 @@ export function Sidebar() {
               </Button>
             </div>
             <nav className="space-y-1 p-3">
-              {NAV_ITEMS.map((item) => {
+              {visibleItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link

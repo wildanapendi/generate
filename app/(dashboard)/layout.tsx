@@ -17,22 +17,25 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Pull profile name (best-effort).
+  // Pull profile name & role (best-effort, single query).
   let fullName: string | null = null;
+  let isAdmin = false;
   try {
     const { data } = await supabase
       .from("users")
-      .select("full_name")
+      .select("full_name, role")
       .eq("id", user.id)
       .maybeSingle();
-    fullName = ((data as Record<string, unknown> | null)?.full_name as string | undefined) ?? null;
+    const profile = data as Record<string, unknown> | null;
+    fullName = (profile?.full_name as string | undefined) ?? null;
+    isAdmin = profile?.role === "admin";
   } catch {
     /* ignore */
   }
 
   return (
     <div className="flex min-h-screen bg-muted/20">
-      <Sidebar />
+      <Sidebar isAdmin={isAdmin} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Navbar email={user.email} fullName={fullName} />
         <main className="flex-1 p-4 md:p-8">{children}</main>
