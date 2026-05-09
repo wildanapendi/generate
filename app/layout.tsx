@@ -27,6 +27,10 @@ export const metadata: Metadata = {
     "Gemini",
   ],
   authors: [{ name: "Modul Praktikum Generator" }],
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
   openGraph: {
     title: "Modul Praktikum Generator",
     description: "Buat modul praktikum profesional dengan AI dalam hitungan menit.",
