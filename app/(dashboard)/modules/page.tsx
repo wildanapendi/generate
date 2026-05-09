@@ -80,7 +80,7 @@ export default async function ModulesListPage({ searchParams }: PageProps) {
         <Button asChild>
           <Link href="/generate">
             <Sparkles className="size-4" />
-            Generate dengan AI
+            Generate Modul
           </Link>
         </Button>
       </header>
@@ -129,11 +129,11 @@ export default async function ModulesListPage({ searchParams }: PageProps) {
             <Plus className="size-10 text-muted-foreground" />
             <CardTitle>Belum ada modul</CardTitle>
             <CardDescription>
-              Mulai dengan AI Generate untuk membuat modul pertama Anda dalam
-              hitungan menit.
+              Mulai dengan Generate Modul untuk membuat modul pertama Anda,
+              baik menggunakan AI maupun input manual.
             </CardDescription>
             <Button asChild className="mt-2">
-              <Link href="/generate">Generate dengan AI</Link>
+              <Link href="/generate">Generate Modul</Link>
             </Button>
           </CardContent>
         </Card>

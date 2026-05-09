@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Plus, LayoutTemplate } from "lucide-react";
+import { LayoutTemplate } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,12 +13,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getTemplates } from "@/services/templates";
 import { CreateTemplateButton } from "@/components/template/create-template-button";
+import { isCurrentUserAdmin } from "@/services/modules";
 import { formatRelativeIndo } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Template" };
 
 export default async function TemplatesPage() {
-  const templates = await getTemplates();
+  const [templates, isAdmin] = await Promise.all([
+    getTemplates(),
+    isCurrentUserAdmin(),
+  ]);
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -29,7 +33,7 @@ export default async function TemplatesPage() {
             Desain cover, header, footer, watermark, dan tipografi modul Anda.
           </p>
         </div>
-        <CreateTemplateButton />
+        {isAdmin && <CreateTemplateButton />}
       </header>
 
       {templates.length === 0 ? (
@@ -38,9 +42,11 @@ export default async function TemplatesPage() {
             <LayoutTemplate className="size-10 text-muted-foreground" />
             <CardTitle>Belum ada template</CardTitle>
             <CardDescription>
-              Buat template pertama untuk menyatukan tampilan modul-modul Anda.
+              {isAdmin
+                ? "Buat template pertama untuk menyatukan tampilan modul-modul Anda."
+                : "Belum ada template yang tersedia. Hubungi admin untuk membuat template."}
             </CardDescription>
-            <CreateTemplateButton variant="default" />
+            {isAdmin && <CreateTemplateButton variant="default" />}
           </CardContent>
         </Card>
       ) : (

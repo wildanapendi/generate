@@ -27,6 +27,44 @@ export async function getCurrentUser() {
   return data.user;
 }
 
+/** User profile row dari tabel `users`. */
+export type UserProfile = {
+  id: string;
+  email: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  institution: string | null;
+  role: string | null;
+};
+
+/**
+ * Ambil profil user dari tabel `users`.
+ * Mengembalikan null jika belum login atau belum punya row di `users`.
+ */
+export async function getCurrentUserProfile(): Promise<UserProfile | null> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from("users")
+    .select("id, email, full_name, avatar_url, institution, role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  return (data as UserProfile | null) ?? null;
+}
+
+/**
+ * Cek apakah user saat ini memiliki role admin.
+ * Trade-off: membuat 2 query (auth + profile), tapi menjaga
+ * separation of concerns antara auth dan business logic.
+ */
+export async function isCurrentUserAdmin(): Promise<boolean> {
+  const profile = await getCurrentUserProfile();
+  return profile?.role === "admin";
+}
+
 /** List modules belonging to the current user. */
 export async function getModules(
   params: ListModulesParams = {},

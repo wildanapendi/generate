@@ -13,6 +13,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   }
 
+  // Hanya admin yang boleh membuat template
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile || profile.role !== "admin") {
+    return NextResponse.json(
+      { error: "FORBIDDEN", message: "Hanya admin yang dapat membuat template." },
+      { status: 403 },
+    );
+  }
+
   let body: { name?: string; description?: string | null };
   try {
     body = (await req.json()) as { name?: string; description?: string | null };

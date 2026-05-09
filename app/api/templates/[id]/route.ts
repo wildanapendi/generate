@@ -11,6 +11,26 @@ interface PatchBody {
   config?: TemplateConfig;
 }
 
+/**
+ * Helper: validasi bahwa user yang sedang login adalah admin.
+ * Mengembalikan NextResponse 401/403 jika tidak valid, atau null jika ok.
+ */
+async function requireAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!profile || profile.role !== "admin") {
+    return NextResponse.json(
+      { error: "FORBIDDEN", message: "Hanya admin yang dapat mengelola template." },
+      { status: 403 },
+    );
+  }
+  return null;
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -19,6 +39,9 @@ export async function PATCH(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
+
+  const forbidden = await requireAdmin(supabase, user.id);
+  if (forbidden) return forbidden;
 
   let body: PatchBody;
   try {
@@ -43,6 +66,9 @@ export async function DELETE(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
+
+  const forbidden = await requireAdmin(supabase, user.id);
+  if (forbidden) return forbidden;
 
   try {
     await deleteTemplate(id);

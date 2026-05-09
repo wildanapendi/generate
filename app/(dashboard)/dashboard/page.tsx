@@ -42,7 +42,7 @@ export default async function DashboardPage() {
           <Button asChild>
             <Link href="/generate">
               <Sparkles className="size-4" />
-              Generate dengan AI
+              Generate Modul
             </Link>
           </Button>
         </div>

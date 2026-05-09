@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { GenerateForm } from "@/components/generate/generate-form";
+import { GenerateModeTabs } from "@/components/generate/generate-mode-tabs";
 
 export const metadata: Metadata = {
-  title: "Generate dengan AI",
+  title: "Generate Modul",
   description:
-    "Buat modul praktikum lengkap dengan bantuan Gemini dalam hitungan menit.",
+    "Buat modul praktikum dengan AI atau tulis secara manual.",
 };
 
 export default function GeneratePage() {
@@ -12,14 +12,13 @@ export default function GeneratePage() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Generate Modul dengan AI
+          Generate Modul
         </h1>
         <p className="text-sm text-muted-foreground">
-          Isi parameter di bawah, lalu Gemini akan menghasilkan modul lengkap
-          (tujuan, dasar teori, prosedur, hasil, pembahasan, dan referensi).
+          Buat modul praktikum menggunakan AI atau tulis konten secara manual.
         </p>
       </header>
-      <GenerateForm />
+      <GenerateModeTabs />
     </div>
   );
 }

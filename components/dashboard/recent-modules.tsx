@@ -40,10 +40,10 @@ export function RecentModules({ modules }: { modules: Module[] }) {
           <div className="rounded-lg border border-dashed p-8 text-center">
             <FileText className="mx-auto size-6 text-muted-foreground" />
             <p className="mt-2 text-sm text-muted-foreground">
-              Belum ada modul. Buat yang pertama dengan AI Generate.
+              Belum ada modul. Buat yang pertama dengan Generate Modul.
             </p>
             <Button asChild className="mt-4" size="sm">
-              <Link href="/generate">Generate dengan AI</Link>
+              <Link href="/generate">Generate Modul</Link>
             </Button>
           </div>
         ) : (

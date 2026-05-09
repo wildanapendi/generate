@@ -25,7 +25,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/modules", label: "Modul", icon: FileText },
   { href: "/templates", label: "Template", icon: LayoutTemplate },
-  { href: "/generate", label: "AI Generate", icon: Sparkles },
+  { href: "/generate", label: "Generate Modul", icon: Sparkles },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ];
 

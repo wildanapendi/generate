@@ -17,14 +17,19 @@ DECLARE
   new_user_id uuid := gen_random_uuid();
 BEGIN
   -- Insert data utama ke auth.users
+  -- Field is_sso_user dan confirmation_token wajib untuk Supabase GoTrue terbaru
   INSERT INTO auth.users (
     id, instance_id, email, encrypted_password, email_confirmed_at,
-    raw_user_meta_data, raw_app_meta_data, aud, role, created_at, updated_at
+    raw_user_meta_data, raw_app_meta_data, aud, role,
+    is_sso_user, confirmation_token,
+    created_at, updated_at
   ) VALUES (
     new_user_id, '00000000-0000-0000-0000-000000000000', 'admin@modulgenerator.com',
     crypt('Props-Ti@2026', gen_salt('bf')), now(),
     '{"full_name":"Administrator"}', '{"provider":"email","providers":["email"]}',
-    'authenticated', 'authenticated', now(), now()
+    'authenticated', 'authenticated',
+    false, '',
+    now(), now()
   );
 
   -- Insert data otentikasi ke auth.identities dengan UUID mandiri
