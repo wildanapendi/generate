@@ -40,5 +40,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-*.test-login.ts
-*.test-supabase.ts
+# supabase (local SQL scripts & config)
+/supabase/
+
+# dev/test scripts
+test-login.ts
+test-supabase.ts
+check-db.ts
+scratch.ts
