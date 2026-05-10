@@ -65,7 +65,7 @@ export async function generateDocx({
   );
 
   // ── Build document paragraphs ──────────────────────────────────────
-  const paragraphs: Paragraph[] = [];
+  const paragraphs: (Paragraph | TableOfContents)[] = [];
 
   // Cover page
   if (template.cover.enabled) {

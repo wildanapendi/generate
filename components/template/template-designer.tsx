@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Save, Trash2 } from "lucide-react";
@@ -61,23 +61,28 @@ export function TemplateDesigner({
     [name, description, config],
   );
 
+  const persistTemplate = useCallback(async (showToast = false) => {
+    try {
+      const res = await fetch(`/api/templates/${template.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error();
+      markClean();
+      if (showToast) toast.success("Tersimpan");
+    } catch {
+      toast.error("Gagal menyimpan template");
+    }
+  }, [template.id, payload, markClean]);
+
   useAutoSave(
     payload,
     async () => {
       if (!isDirty && name === template.name && description === (template.description ?? "")) {
         return;
       }
-      try {
-        const res = await fetch(`/api/templates/${template.id}`, {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error();
-        markClean();
-      } catch {
-        toast.error("Gagal menyimpan template");
-      }
+      await persistTemplate(false);
     },
     { delay: 3000 },
   );
@@ -98,18 +103,7 @@ export function TemplateDesigner({
   }
 
   async function onSaveNow() {
-    try {
-      const res = await fetch(`/api/templates/${template.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error();
-      markClean();
-      toast.success("Tersimpan");
-    } catch {
-      toast.error("Gagal menyimpan");
-    }
+    await persistTemplate(true);
   }
 
   return (

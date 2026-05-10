@@ -5,8 +5,14 @@ import {
   type TemplateConfig,
   DEFAULT_TEMPLATE_CONFIG,
 } from "@/types/template";
-import type { Json } from "@/types/database";
+import type { Json, Database } from "@/types/database";
 
+/**
+ * Ambil semua templates yang tersedia.
+ * RLS policy SELECT sudah permissive untuk semua authenticated users
+ * sehingga lecturer bisa melihat templates (untuk picker saat generate/export).
+ * Admin bisa write — ini di-enforce oleh RLS INSERT/UPDATE/DELETE policies.
+ */
 export async function getTemplates(): Promise<Template[]> {
   const supabase = await createClient();
   const user = (await supabase.auth.getUser()).data.user;
@@ -14,7 +20,6 @@ export async function getTemplates(): Promise<Template[]> {
   const { data } = await supabase
     .from("templates")
     .select("*")
-    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
   return (data ?? []) as Template[];
 }
@@ -39,15 +44,17 @@ export async function createTemplate(
   if (!user) throw new Error("UNAUTHENTICATED");
 
   const config = (input.config ?? DEFAULT_TEMPLATE_CONFIG) as unknown as Json;
+  const row = {
+    user_id: user.id,
+    name: input.name,
+    description: input.description ?? null,
+    is_default: input.is_default ?? false,
+    config,
+  } as Database["public"]["Tables"]["templates"]["Insert"];
   const { data, error } = await supabase
     .from("templates")
-    .insert({
-      user_id: user.id,
-      name: input.name,
-      description: input.description ?? null,
-      is_default: input.is_default ?? false,
-      config,
-    })
+    // @ts-expect-error — Supabase generated types resolve Insert to `never` due to circular Partial self-reference
+    .insert(row)
     .select()
     .single();
   if (error) throw new Error("CREATE_FAILED");
@@ -66,6 +73,7 @@ export async function updateTemplate(
     update.config = patch.config as unknown as Json;
   const { data, error } = await supabase
     .from("templates")
+    // @ts-expect-error — Supabase generated types resolve Update to `never` due to circular Partial self-reference
     .update(update)
     .eq("id", id)
     .select()

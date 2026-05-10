@@ -140,6 +140,7 @@ export async function createModule(input: Omit<ModuleInsert, "user_id">) {
 
   const { data, error } = await supabase
     .from("modules")
+    // @ts-expect-error — Supabase generated types issue
     .insert({ ...input, user_id: user.id })
     .select()
     .single();
@@ -154,7 +155,8 @@ export async function updateModule(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("modules")
-    .update(patch)
+    // @ts-expect-error — Supabase generated types resolve Update to never
+    .update(patch as unknown as Record<string, unknown>)
     .eq("id", id)
     .select()
     .single();
@@ -295,21 +297,21 @@ export async function getRecentActivity(limit = 10): Promise<ActivityItem[]> {
   ]);
 
   const items: ActivityItem[] = [
-    ...(modules.data ?? []).map((m) => ({
+    ...((modules.data as any[]) ?? []).map((m) => ({
       id: `mod-${m.id}`,
       type: "module" as const,
       title: `Modul: ${m.title}`,
       timestamp: m.updated_at,
       status: m.status,
     })),
-    ...(generates.data ?? []).map((g) => ({
+    ...((generates.data as any[]) ?? []).map((g) => ({
       id: `gen-${g.id}`,
       type: "generate" as const,
       title: `AI Generate (${g.model ?? "Gemini"})`,
       timestamp: g.created_at,
       status: g.status,
     })),
-    ...(exports.data ?? []).map((e) => ({
+    ...((exports.data as any[]) ?? []).map((e) => ({
       id: `exp-${e.id}`,
       type: "export" as const,
       title: `Export ${e.format.toUpperCase()}`,

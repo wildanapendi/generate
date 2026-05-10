@@ -11,6 +11,9 @@ const PUBLIC_PATHS = [
 
 const PROTECTED_PREFIXES = ["/dashboard", "/modules", "/templates", "/editor", "/generate", "/settings"];
 
+/** Route prefixes yang membutuhkan role admin */
+const ADMIN_ONLY_PREFIXES = ["/templates"];
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -55,6 +58,7 @@ export async function updateSession(request: NextRequest) {
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   const isPublicAuth = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
+  // Redirect unauthenticated users dari protected routes ke login
   if (!user && isProtected) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
@@ -62,11 +66,32 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Redirect authenticated users dari auth pages ke dashboard
   if (user && isPublicAuth) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     url.search = "";
     return NextResponse.redirect(url);
+  }
+
+  // RBAC enforcement: admin-only routes
+  // Query role hanya ketika user sudah authenticated DAN mengakses admin-only route
+  const isAdminOnly = ADMIN_ONLY_PREFIXES.some((p) => pathname.startsWith(p));
+  if (user && isAdminOnly) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle() as {
+        data: { role: string | null } | null;
+      };
+
+    if (!profile || profile.role !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      url.searchParams.set("forbidden", "1");
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

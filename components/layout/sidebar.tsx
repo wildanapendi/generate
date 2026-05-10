@@ -14,40 +14,68 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import type { UserRole } from "@/types/auth";
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  /** Jika true, item hanya tampil untuk admin */
-  adminOnly?: boolean;
+  /** Role minimum yang dibutuhkan. Undefined = semua role bisa akses. */
+  requiredRole?: UserRole;
 }
 
+/**
+ * Declarative nav items — filter berdasarkan `requiredRole`.
+ * Menambahkan menu admin-only baru cukup tambahkan entry dengan requiredRole.
+ */
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/modules", label: "Modul", icon: FileText },
-  { href: "/templates", label: "Template", icon: LayoutTemplate, adminOnly: true },
+  { href: "/templates", label: "Template", icon: LayoutTemplate, requiredRole: "admin" },
   { href: "/generate", label: "Generate Modul", icon: Sparkles },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ];
 
 interface SidebarProps {
-  /** Apakah user saat ini adalah admin */
-  isAdmin?: boolean;
+  /** Role user saat ini — dari getSessionUser() */
+  role?: UserRole;
 }
 
-export function Sidebar({ isAdmin = false }: SidebarProps) {
+export function Sidebar({ role = "lecturer" }: SidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Filter nav items berdasarkan role — sembunyikan menu admin-only untuk user biasa
+  // Filter nav items berdasarkan role — sembunyikan menu yang butuh role lebih tinggi
   const visibleItems = NAV_ITEMS.filter(
-    (item) => !item.adminOnly || isAdmin,
+    (item) => !item.requiredRole || item.requiredRole === role,
   );
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  /** Shared nav link renderer — DRY antara desktop dan mobile */
+  function renderNavLinks(onNavigate?: () => void) {
+    return visibleItems.map((item) => {
+      const Icon = item.icon;
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={onNavigate}
+          className={cn(
+            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            isActive(item.href)
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+          )}
+        >
+          <Icon className="size-4" />
+          {item.label}
+        </Link>
+      );
+    });
   }
 
   const desktop = (
@@ -64,24 +92,7 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
         </div>
       </div>
       <nav className="space-y-1 p-3">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                isActive(item.href)
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              )}
-            >
-              <Icon className="size-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+        {renderNavLinks()}
       </nav>
     </aside>
   );
@@ -116,25 +127,7 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
               </Button>
             </div>
             <nav className="space-y-1 p-3">
-              {visibleItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                      isActive(item.href)
-                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    )}
-                  >
-                    <Icon className="size-4" />
-                    {item.label}
-                  </Link>
-                );
-              })}
+              {renderNavLinks(() => setMobileOpen(false))}
             </nav>
           </aside>
         </div>
@@ -149,3 +142,4 @@ export function Sidebar({ isAdmin = false }: SidebarProps) {
     </>
   );
 }
+

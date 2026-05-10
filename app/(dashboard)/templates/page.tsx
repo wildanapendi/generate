@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { LayoutTemplate, ShieldAlert } from "lucide-react";
+import { LayoutTemplate } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -13,16 +13,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getTemplates } from "@/services/templates";
 import { CreateTemplateButton } from "@/components/template/create-template-button";
-import { isCurrentUserAdmin } from "@/services/modules";
 import { formatRelativeIndo } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Template" };
 
+/**
+ * Template list page (admin only).
+ * Guard sudah di-handle oleh templates/layout.tsx via requireRole('admin').
+ * Semua user yang sampai sini pasti admin — tidak perlu cek ulang.
+ */
 export default async function TemplatesPage() {
-  const [templates, isAdmin] = await Promise.all([
-    getTemplates(),
-    isCurrentUserAdmin(),
-  ]);
+  const templates = await getTemplates();
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -30,24 +31,11 @@ export default async function TemplatesPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Template</h1>
           <p className="text-sm text-muted-foreground">
-            {isAdmin
-              ? "Desain cover, header, footer, watermark, dan tipografi modul Anda."
-              : "Lihat template yang tersedia. Hubungi admin untuk perubahan."}
+            Desain cover, header, footer, watermark, dan tipografi modul Anda.
           </p>
         </div>
-        {isAdmin && <CreateTemplateButton />}
+        <CreateTemplateButton />
       </header>
-
-      {/* Info banner untuk user non-admin */}
-      {!isAdmin && (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
-          <ShieldAlert className="size-5 shrink-0" />
-          <p>
-            Hanya admin yang dapat membuat dan mengedit template. Anda dapat melihat
-            template yang tersedia di sini.
-          </p>
-        </div>
-      )}
 
       {templates.length === 0 ? (
         <Card>
@@ -55,11 +43,9 @@ export default async function TemplatesPage() {
             <LayoutTemplate className="size-10 text-muted-foreground" />
             <CardTitle>Belum ada template</CardTitle>
             <CardDescription>
-              {isAdmin
-                ? "Buat template pertama untuk menyatukan tampilan modul-modul Anda."
-                : "Belum ada template yang tersedia. Hubungi admin untuk membuat template."}
+              Buat template pertama untuk menyatukan tampilan modul-modul Anda.
             </CardDescription>
-            {isAdmin && <CreateTemplateButton variant="default" />}
+            <CreateTemplateButton variant="default" />
           </CardContent>
         </Card>
       ) : (
@@ -78,14 +64,11 @@ export default async function TemplatesPage() {
               <CardContent className="text-xs text-muted-foreground">
                 Diubah {formatRelativeIndo(t.updated_at)}
               </CardContent>
-              {/* Hanya admin yang bisa membuka designer */}
-              {isAdmin && (
-                <CardFooter className="flex items-center justify-end gap-2">
-                  <Button size="sm" variant="outline" asChild>
-                    <Link href={`/templates/${t.id}`}>Buka designer</Link>
-                  </Button>
-                </CardFooter>
-              )}
+              <CardFooter className="flex items-center justify-end gap-2">
+                <Button size="sm" variant="outline" asChild>
+                  <Link href={`/templates/${t.id}`}>Buka designer</Link>
+                </Button>
+              </CardFooter>
             </Card>
           ))}
         </div>
@@ -93,3 +76,4 @@ export default async function TemplatesPage() {
     </div>
   );
 }
+

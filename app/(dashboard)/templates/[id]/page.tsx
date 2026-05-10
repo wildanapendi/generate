@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getTemplateById } from "@/services/templates";
-import { isCurrentUserAdmin } from "@/services/modules";
 import { TemplateDesigner } from "@/components/template/template-designer";
 import type { Module, ModuleContent } from "@/types/module";
 
@@ -79,17 +78,15 @@ function buildSampleModule(): Module {
   };
 }
 
+/**
+ * Template designer page (admin only).
+ * Guard sudah di-handle oleh templates/layout.tsx via requireRole('admin').
+ */
 export default async function TemplateDesignerPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // Hanya admin yang boleh mengakses Template Designer
-  const isAdmin = await isCurrentUserAdmin();
-  if (!isAdmin) {
-    redirect("/dashboard");
-  }
-
   const { id } = await params;
   const template = await getTemplateById(id);
 
@@ -112,3 +109,4 @@ export default async function TemplateDesignerPage({
     </div>
   );
 }
+

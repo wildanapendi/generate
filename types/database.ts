@@ -24,7 +24,7 @@ export interface Database {
           full_name: string | null;
           avatar_url: string | null;
           institution: string | null;
-          role: string | null;
+          role: "admin" | "lecturer" | null;
           created_at: string;
           updated_at: string;
         };
@@ -34,7 +34,7 @@ export interface Database {
           full_name?: string | null;
           avatar_url?: string | null;
           institution?: string | null;
-          role?: string | null;
+          role?: "admin" | "lecturer" | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -44,7 +44,7 @@ export interface Database {
           full_name?: string | null;
           avatar_url?: string | null;
           institution?: string | null;
-          role?: string | null;
+          role?: "admin" | "lecturer" | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -166,6 +166,8 @@ export interface Database {
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
-    Enums: Record<string, never>;
+    Enums: {
+      user_role: "admin" | "lecturer";
+    };
   };
 }

@@ -1,26 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { createTemplate } from "@/services/templates";
+import { getSessionUser } from "@/lib/auth/get-session-user";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) {
     return NextResponse.json({ error: "UNAUTHENTICATED" }, { status: 401 });
   }
-
-  // Hanya admin yang boleh membuat template
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (!profile || profile.role !== "admin") {
+  if (user.role !== "admin") {
     return NextResponse.json(
       { error: "FORBIDDEN", message: "Hanya admin yang dapat membuat template." },
       { status: 403 },
