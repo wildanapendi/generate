@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/get-session-user";
-import { Sidebar } from "@/components/layout/sidebar";
+import { DesktopSidebar } from "@/components/layout/sidebar";
 import { Navbar } from "@/components/layout/navbar";
 import { ForbiddenToast } from "./forbidden-toast";
 
@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-muted/20">
-      <Sidebar role={user.role} />
+      <DesktopSidebar role={user.role} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Navbar email={user.email} fullName={user.fullName} role={user.role} />
         <main className="flex-1 p-4 md:p-8">{children}</main>

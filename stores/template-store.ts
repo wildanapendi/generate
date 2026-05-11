@@ -30,7 +30,18 @@ export const useTemplateStore = create<TemplateStoreState>((set) => ({
       },
     })),
 
-  load: (config) => set({ config, isDirty: false }),
+  load: (config) =>
+    set({
+      config: {
+        cover: { ...DEFAULT_TEMPLATE_CONFIG.cover, ...config?.cover },
+        header: { ...DEFAULT_TEMPLATE_CONFIG.header, ...config?.header },
+        footer: { ...DEFAULT_TEMPLATE_CONFIG.footer, ...config?.footer },
+        watermark: { ...DEFAULT_TEMPLATE_CONFIG.watermark, ...config?.watermark },
+        layout: { ...DEFAULT_TEMPLATE_CONFIG.layout, ...config?.layout },
+        typography: { ...DEFAULT_TEMPLATE_CONFIG.typography, ...config?.typography },
+      },
+      isDirty: false,
+    }),
 
   reset: () => set({ config: DEFAULT_TEMPLATE_CONFIG, isDirty: true }),
 

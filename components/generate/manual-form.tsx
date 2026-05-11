@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2, GripVertical, Save } from "lucide-react";
+import { Plus, Trash2, ChevronUp, ChevronDown, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,11 +23,6 @@ import {
 } from "@/components/ui/card";
 import type { ModuleSection } from "@/types/module";
 
-/**
- * Tipe section yang tersedia untuk pembuatan modul manual.
- * Mapping ini digunakan untuk label dropdown dan sebagai
- * discriminator `type` pada ModuleSection.
- */
 const SECTION_TYPES: Record<ModuleSection["type"], string> = {
   heading: "Heading",
   paragraph: "Paragraf",
@@ -44,20 +39,43 @@ const SECTION_TYPES: Record<ModuleSection["type"], string> = {
 };
 
 interface SectionDraft {
-  /** Client-side temporary id untuk key rendering */
   _key: string;
   type: ModuleSection["type"];
   title: string;
   content: string;
 }
 
+function generateSafeId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+}
+
 function createEmptySection(): SectionDraft {
   return {
-    _key: crypto.randomUUID(),
+    _key: generateSafeId(),
     type: "paragraph",
     title: "",
     content: "",
   };
+}
+
+function getPlaceholderForType(type: ModuleSection["type"]): string {
+  switch (type) {
+    case "image":
+      return "Masukkan URL gambar atau deksripsi gambar di sini...";
+    case "code":
+      return "Tulis kode program di sini...";
+    case "list":
+      return "Tulis daftar item (gunakan format markdown bullet - atau 1.)...";
+    case "formula":
+      return "Tulis rumus matematika (gunakan format LaTeX)...";
+    case "table":
+      return "Buat tabel menggunakan format markdown...";
+    default:
+      return "Tulis konten section di sini...";
+  }
 }
 
 export function ManualForm() {
@@ -74,10 +92,13 @@ export function ManualForm() {
   const [lab, setLab] = useState("");
   const [code, setCode] = useState("");
 
-  // sections
-  const [sections, setSections] = useState<SectionDraft[]>([
-    createEmptySection(),
-  ]);
+  // sections - initialize empty to prevent hydration mismatch
+  const [sections, setSections] = useState<SectionDraft[]>([]);
+
+  // Hydrate initial section on client
+  useEffect(() => {
+    setSections([createEmptySection()]);
+  }, []);
 
   function addSection() {
     setSections((prev) => [...prev, createEmptySection()]);
@@ -93,6 +114,22 @@ export function ManualForm() {
     );
   }
 
+  function moveSection(key: string, direction: "up" | "down") {
+    setSections((prev) => {
+      const idx = prev.findIndex((s) => s._key === key);
+      if (idx === -1) return prev;
+      if (direction === "up" && idx === 0) return prev;
+      if (direction === "down" && idx === prev.length - 1) return prev;
+
+      const newSections = [...prev];
+      const targetIdx = direction === "up" ? idx - 1 : idx + 1;
+      const temp = newSections[idx];
+      newSections[idx] = newSections[targetIdx];
+      newSections[targetIdx] = temp;
+      return newSections;
+    });
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -101,11 +138,10 @@ export function ManualForm() {
       return;
     }
 
-    // Bangun sections dengan order berurutan
     const moduleSections: ModuleSection[] = sections
       .filter((s) => s.title.trim() || s.content.trim())
       .map((s, i) => ({
-        id: crypto.randomUUID(),
+        id: generateSafeId(),
         type: s.type,
         title: s.title.trim(),
         content: s.content.trim(),
@@ -264,8 +300,7 @@ export function ManualForm() {
             {sections.map((section, idx) => (
               <Card key={section._key}>
                 <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-3">
-                  <GripVertical className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="text-xs font-medium text-muted-foreground">
+                  <span className="text-xs font-medium text-muted-foreground w-6 text-center">
                     #{idx + 1}
                   </span>
                   <div className="flex flex-1 items-center gap-2">
@@ -292,17 +327,41 @@ export function ManualForm() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="size-8 text-muted-foreground hover:text-destructive"
-                    onClick={() => removeSection(section._key)}
-                    disabled={saving}
-                    aria-label="Hapus section"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-foreground"
+                      onClick={() => moveSection(section._key, "up")}
+                      disabled={saving || idx === 0}
+                      aria-label="Pindah ke atas"
+                    >
+                      <ChevronUp className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-foreground"
+                      onClick={() => moveSection(section._key, "down")}
+                      disabled={saving || idx === sections.length - 1}
+                      aria-label="Pindah ke bawah"
+                    >
+                      <ChevronDown className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="size-8 text-muted-foreground hover:text-destructive"
+                      onClick={() => removeSection(section._key)}
+                      disabled={saving}
+                      aria-label="Hapus section"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-3 pt-0">
                   <Input
@@ -314,7 +373,7 @@ export function ManualForm() {
                     disabled={saving}
                   />
                   <Textarea
-                    placeholder="Tulis konten section di sini..."
+                    placeholder={getPlaceholderForType(section.type)}
                     value={section.content}
                     onChange={(e) =>
                       updateSection(section._key, "content", e.target.value)

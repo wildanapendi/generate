@@ -12,6 +12,12 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { UserRole } from "@/types/auth";
@@ -41,11 +47,8 @@ interface SidebarProps {
   role?: UserRole;
 }
 
-export function Sidebar({ role = "lecturer" }: SidebarProps) {
+export function DesktopSidebar({ role = "lecturer" }: SidebarProps) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // Filter nav items berdasarkan role — sembunyikan menu yang butuh role lebih tinggi
   const visibleItems = NAV_ITEMS.filter(
     (item) => !item.requiredRole || item.requiredRole === role,
   );
@@ -55,30 +58,7 @@ export function Sidebar({ role = "lecturer" }: SidebarProps) {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  /** Shared nav link renderer — DRY antara desktop dan mobile */
-  function renderNavLinks(onNavigate?: () => void) {
-    return visibleItems.map((item) => {
-      const Icon = item.icon;
-      return (
-        <Link
-          key={item.href}
-          href={item.href}
-          onClick={onNavigate}
-          className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-            isActive(item.href)
-              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-              : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-          )}
-        >
-          <Icon className="size-4" />
-          {item.label}
-        </Link>
-      );
-    });
-  }
-
-  const desktop = (
+  return (
     <aside className="hidden w-64 shrink-0 border-r bg-sidebar text-sidebar-foreground md:block">
       <div className="flex h-16 items-center gap-2 border-b px-6">
         <span className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground">
@@ -92,53 +72,92 @@ export function Sidebar({ role = "lecturer" }: SidebarProps) {
         </div>
       </div>
       <nav className="space-y-1 p-3">
-        {renderNavLinks()}
+        {visibleItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                isActive(item.href)
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              )}
+            >
+              <Icon className="size-4" />
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
     </aside>
   );
+}
 
-  const mobile = (
-    <>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="md:hidden"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open menu"
-      >
-        <Menu className="size-5" />
-      </Button>
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileOpen(false)}
-          />
-          <aside className="absolute inset-y-0 left-0 w-64 border-r bg-sidebar text-sidebar-foreground shadow-xl">
-            <div className="flex h-16 items-center justify-between border-b px-4">
-              <span className="font-semibold">Menu</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileOpen(false)}
-                aria-label="Close menu"
-              >
-                <X className="size-5" />
-              </Button>
-            </div>
-            <nav className="space-y-1 p-3">
-              {renderNavLinks(() => setMobileOpen(false))}
-            </nav>
-          </aside>
-        </div>
-      )}
-    </>
+export function MobileSidebar({ role = "lecturer" }: SidebarProps) {
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const visibleItems = NAV_ITEMS.filter(
+    (item) => !item.requiredRole || item.requiredRole === role,
   );
 
+  function isActive(href: string) {
+    if (href === "/dashboard") return pathname === "/dashboard";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
+
+  return (
+    <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="md:hidden"
+          aria-label="Open menu"
+        >
+          <Menu className="size-5" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-64 p-0">
+        <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
+        <div className="flex h-16 items-center border-b px-6">
+          <span className="font-semibold">Menu</span>
+        </div>
+        <nav className="space-y-1 p-3">
+          {visibleItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  isActive(item.href)
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                )}
+              >
+                <Icon className="size-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+// Keep the default export or original Sidebar as a wrapper if needed, 
+// but it's better to update layout and navbar to use the split components.
+export function Sidebar(props: SidebarProps) {
   return (
     <>
-      {desktop}
-      {mobile}
+      <DesktopSidebar {...props} />
+      <MobileSidebar {...props} />
     </>
   );
 }
