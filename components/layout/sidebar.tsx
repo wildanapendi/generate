@@ -17,6 +17,7 @@ import {
   SheetContent,
   SheetTrigger,
   SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -122,6 +123,7 @@ export function MobileSidebar({ role = "lecturer" }: SidebarProps) {
       </SheetTrigger>
       <SheetContent side="left" className="w-64 p-0">
         <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
+        <SheetDescription className="sr-only">Navigasi menu utama untuk aplikasi</SheetDescription>
         <div className="flex h-16 items-center border-b px-6">
           <span className="font-semibold">Menu</span>
         </div>
