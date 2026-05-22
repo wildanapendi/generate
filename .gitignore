@@ -48,3 +48,9 @@ test-login.ts
 test-supabase.ts
 check-db.ts
 scratch.ts
+
+
+#Ignore vscode AI rules
+.github\instructions\codacy.instructions.md
+.github
+
